@@ -1,0 +1,775 @@
+
+      const response =
+        await fetch(
+          url,
+          {
+            method,
+
+            headers:
+              getAuthHeaders(),
+
+            body:
+              JSON.stringify(
+                body
+              ),
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok || !data.success) {
+
+        throw new Error(
+          data.message ||
+          "Xatolik yuz berdi"
+        );
+
+      }
+
+
+      setMessage(
+        editingId
+          ? "Foydalanuvchi yangilandi"
+          : "Foydalanuvchi qo‘shildi"
+      );
+
+
+      setForm(
+        emptyForm
+      );
+
+
+      setEditingId(
+        null
+      );
+
+
+      await loadUsers();
+
+    } catch (err) {
+
+      console.error(err);
+
+      setError(
+        err.message
+      );
+
+    }
+  }
+
+
+  // ====================================================
+  // EDIT
+  // ====================================================
+
+  function handleEdit(user) {
+
+    setEditingId(
+      user.id
+    );
+
+    setForm({
+
+      ism:
+        user.ism || "",
+
+      telefon:
+        user.telefon || "",
+
+      email:
+        user.email || "",
+
+      parol: "",
+
+      rol:
+        user.rol || "sotuvchi",
+
+    });
+
+    setMessage("");
+    setError("");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+
+  // ====================================================
+  // CANCEL
+  // ====================================================
+
+  function cancelEdit() {
+
+    setEditingId(
+      null
+    );
+
+    setForm(
+      emptyForm
+    );
+
+    setMessage("");
+    setError("");
+  }
+
+
+  // ====================================================
+  // DELETE
+  // ====================================================
+
+  async function handleDelete(id) {
+
+    const confirmDelete =
+      window.confirm(
+        "Bu foydalanuvchini o‘chirishga ishonchingiz komilmi?"
+      );
+
+
+    if (!confirmDelete) {
+      return;
+    }
+
+
+    try {
+
+      setMessage("");
+      setError("");
+
+
+      const response =
+        await fetch(
+          `${API}/${id}`,
+          {
+            method: "DELETE",
+            headers:
+              getAuthHeaders(),
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok || !data.success) {
+
+        throw new Error(
+          data.message ||
+          "O‘chirishda xatolik"
+        );
+
+      }
+
+
+      setMessage(
+        "Foydalanuvchi o‘chirildi"
+      );
+
+
+      await loadUsers();
+
+    } catch (err) {
+
+      console.error(err);
+
+      setError(
+        err.message
+      );
+
+    }
+  }
+
+
+  // ====================================================
+  // PASSWORD
+  // ====================================================
+
+  async function handlePasswordChange(id) {
+
+    if (!newPassword) {
+
+      setError(
+        "Yangi parolni kiriting"
+      );
+
+      return;
+    }
+
+
+    if (newPassword.length < 6) {
+
+      setError(
+        "Parol kamida 6 ta belgidan iborat bo‘lishi kerak"
+      );
+
+      return;
+    }
+
+
+    try {
+
+      setMessage("");
+      setError("");
+
+
+      const response =
+        await fetch(
+          `${API}/${id}/parol`,
+          {
+            method: "PUT",
+
+            headers:
+              getAuthHeaders(),
+
+            body:
+              JSON.stringify({
+                parol:
+                  newPassword,
+              }),
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok || !data.success) {
+
+        throw new Error(
+          data.message ||
+          "Parolni o‘zgartirishda xatolik"
+        );
+
+      }
+
+
+      setMessage(
+        "Parol muvaffaqiyatli o‘zgartirildi"
+      );
+
+
+      setPasswordId(
+        null
+      );
+
+      setNewPassword("");
+
+    } catch (err) {
+
+      console.error(err);
+
+      setError(
+        err.message
+      );
+
+    }
+  }
+
+
+  // ====================================================
+  // RENDER
+  // ====================================================
+
+  return (
+
+    <div>
+
+
+      {/* ================================================
+          FORM
+      ================================================ */}
+
+      <section className="panel">
+
+        <div className="panel-header">
+
+          <div>
+
+            <h2>
+
+              {editingId
+                ? "✏️ Foydalanuvchini tahrirlash"
+                : "➕ Yangi foydalanuvchi"}
+
+            </h2>
+
+            <p>
+              Admin va sotuvchilarni
+              boshqarish
+            </p>
+
+          </div>
+
+        </div>
+
+
+        {message && (
+
+          <div className="success-message">
+            ✅ {message}
+          </div>
+
+        )}
+
+
+        {error && (
+
+          <div className="error-message">
+            ❌ {error}
+          </div>
+
+        )}
+
+
+        <form
+          onSubmit={
+            handleSubmit
+          }
+        >
+
+          <div className="form-grid">
+
+
+            <div className="input-group">
+
+              <label>
+                Ism *
+              </label>
+
+              <input
+                name="ism"
+                value={
+                  form.ism
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Ali Valiyev"
+              />
+
+            </div>
+
+
+            <div className="input-group">
+
+              <label>
+                Telefon
+              </label>
+
+              <input
+                name="telefon"
+                value={
+                  form.telefon
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="+998 90 123 45 67"
+              />
+
+            </div>
+
+
+            <div className="input-group">
+
+              <label>
+                Email *
+              </label>
+
+              <input
+                type="email"
+                name="email"
+                value={
+                  form.email
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="sotuvchi@example.com"
+              />
+
+            </div>
+
+
+            {!editingId && (
+
+              <div className="input-group">
+
+                <label>
+                  Parol *
+                </label>
+
+                <input
+                  type="password"
+                  name="parol"
+                  value={
+                    form.parol
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Kamida 6 ta belgi"
+                />
+
+              </div>
+
+            )}
+
+
+            <div className="input-group">
+
+              <label>
+                Rol *
+              </label>
+
+              <select
+                name="rol"
+                value={
+                  form.rol
+                }
+                onChange={
+                  handleChange
+                }
+              >
+
+                <option value="sotuvchi">
+                  👨‍💼 Sotuvchi
+                </option>
+
+                <option value="admin">
+                  👑 Admin
+                </option>
+
+              </select>
+
+            </div>
+
+
+          </div>
+
+
+          <div className="form-buttons">
+
+            <button
+              className="btn primary"
+              type="submit"
+            >
+
+              {editingId
+                ? "💾 Saqlash"
+                : "➕ Qo‘shish"}
+
+            </button>
+
+
+            {editingId && (
+
+              <button
+                className="btn secondary"
+                type="button"
+                onClick={
+                  cancelEdit
+                }
+              >
+                Bekor qilish
+              </button>
+
+            )}
+
+          </div>
+
+        </form>
+
+      </section>
+
+
+      {/* ================================================
+          USERS TABLE
+      ================================================ */}
+
+      <section className="panel">
+
+        <div className="products-header">
+
+          <div>
+
+            <h2>
+              👤 Foydalanuvchilar
+            </h2>
+
+            <p>
+              Jami:{" "}
+              {foydalanuvchilar.length} ta
+            </p>
+
+          </div>
+
+
+          <button
+            className="btn secondary"
+            onClick={
+              loadUsers
+            }
+          >
+            🔄 Yangilash
+          </button>
+
+        </div>
+
+
+        {loading ? (
+
+          <div className="empty">
+            ⏳ Yuklanmoqda...
+          </div>
+
+        ) : foydalanuvchilar.length ===
+          0 ? (
+
+          <div className="empty">
+            📭 Foydalanuvchilar topilmadi
+          </div>
+
+        ) : (
+
+          <div className="table-wrapper">
+
+            <table>
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    ID
+                  </th>
+
+                  <th>
+                    Foydalanuvchi
+                  </th>
+
+                  <th>
+                    Telefon
+                  </th>
+
+                  <th>
+                    Email
+                  </th>
+
+                  <th>
+                    Rol
+                  </th>
+
+                  <th>
+                    Amallar
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                {foydalanuvchilar.map(
+                  (user) => (
+
+                    <tr
+                      key={
+                        user.id
+                      }
+                    >
+
+                      <td>
+                        #{user.id}
+                      </td>
+
+
+                      <td>
+
+                        <strong>
+                          {user.ism}
+                        </strong>
+
+                      </td>
+
+
+                      <td>
+                        {user.telefon ||
+                          "—"}
+                      </td>
+
+
+                      <td>
+                        {user.email}
+                      </td>
+
+
+                      <td>
+
+                        {user.rol ===
+                        "admin" ? (
+
+                          <span className="status good">
+                            👑 Admin
+                          </span>
+
+                        ) : (
+
+                          <span className="status">
+                            👨‍💼 Sotuvchi
+                          </span>
+
+                        )}
+
+                      </td>
+
+
+                      <td>
+
+                        <div className="actions">
+
+
+                          <button
+                            className="action edit"
+                            onClick={() =>
+                              handleEdit(
+                                user
+                              )
+                            }
+                            title="Tahrirlash"
+                          >
+                            ✏️
+                          </button>
+
+
+                          <button
+                            className="action"
+                            onClick={() => {
+
+                              setPasswordId(
+                                user.id
+                              );
+
+                              setNewPassword(
+                                ""
+                              );
+
+                              setError("");
+                              setMessage("");
+
+                            }}
+                            title="Parolni o‘zgartirish"
+                          >
+                            🔑
+                          </button>
+
+
+                          <button
+                            className="action delete"
+                            onClick={() =>
+                              handleDelete(
+                                user.id
+                              )
+                            }
+                            title="O‘chirish"
+                          >
+                            🗑️
+                          </button>
+
+
+                        </div>
+
+
+                        {passwordId ===
+                          user.id && (
+
+                          <div
+                            className="password-box"
+                            style={{
+                              marginTop:
+                                "10px",
+                              display:
+                                "flex",
+                              gap:
+                                "8px",
+                            }}
+                          >
+
+                            <input
+                              type="password"
+                              value={
+                                newPassword
+                              }
+                              onChange={(e) =>
+                                setNewPassword(
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Yangi parol"
+                              style={{
+                                maxWidth:
+                                  "180px",
+                              }}
+                            />
+
+                            <button
+                              className="btn primary"
+                              onClick={() =>
+                                handlePasswordChange(
+                                  user.id
+                                )
+                              }
+                            >
+                              Saqlash
+                            </button>
+
+                            <button
+                              className="btn secondary"
+                              onClick={() => {
+
+                                setPasswordId(
+                                  null
+                                );
+
+                                setNewPassword(
+                                  ""
+                                );
+
+                              }}
+                            >
+                              ✕
+                            </button>
+
+                          </div>
+
+                        )}
+
+                      </td>
+
+                    </tr>
+
+                  )
+                )}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        )}
+
+      </section>
+
+    </div>
+
+  );
+}
+
